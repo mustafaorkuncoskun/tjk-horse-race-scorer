@@ -41,7 +41,9 @@ export function kosFormatla(
     'ÇAKIŞMA': '⚠️',
   };
 
-  const baslik = `🏇 <b>${sehir} — ${kosNo}. Koşu ${saat}</b>\n${mesafe}m ${pist} ${pistDurum ? '| ' + pistDurum : ''}\n`;
+  const now = new Date();
+  const tarih = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+  const baslik = `🏇 <b>${sehir} — ${kosNo}. Koşu ${tarih} ${saat}</b>\n${mesafe}m ${pist} ${pistDurum ? '| ' + pistDurum : ''}\n`;
 
   const satirlar = skorlar.slice(0, 5).map((s, i) => {
     const emoji = guvenEmoji[s.guven] || '⚪';
