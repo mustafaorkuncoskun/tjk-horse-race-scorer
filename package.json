@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node --use-system-ca -r ts-node/register src/index.ts",
     "backtest": "node -r ts-node/register src/backtest.ts",
+    "auto": "node -r ts-node/register -r dotenv/config src/auto.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,7 +17,8 @@
     "axios": "^1.16.1",
     "chalk": "^5.6.2",
     "cheerio": "^1.2.0",
-    "cli-table3": "^0.6.5"
+    "cli-table3": "^0.6.5",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",

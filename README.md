@@ -63,6 +63,51 @@ Son 14 günün sonuçlarını test eder, doğruluk oranını gösterir.
   3     KAPTANPAŞALI  6-4-2-2-2-1   59   3.50   65    70    68    68    ◆ ORTA
 ```
 
+## Linux Sunucuda Otomatik Telegram Bildirimi
+
+### Kurulum
+
+```bash
+# Node.js 20 kur
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Projeyi kur
+git clone https://github.com/mustafaorkuncoskun/tjk-horse-race-scorer.git
+cd tjk-horse-race-scorer
+npm install
+```
+
+### Telegram Bot Kurulumu
+
+1. Telegram'da `@BotFather`'a `/newbot` yaz → token al
+2. Bota bir mesaj gönder, sonra `https://api.telegram.org/bot<TOKEN>/getUpdates` adresinden `chat_id`'ni bul
+
+### .env Dosyası
+
+```bash
+echo "TELEGRAM_TOKEN=your_token_here" > .env
+echo "TELEGRAM_CHAT_ID=your_chat_id_here" >> .env
+```
+
+### Çalıştır
+
+```bash
+npm run auto
+```
+
+### Cron ile Otomatik Çalıştırma
+
+```bash
+crontab -e
+```
+
+Şu satırı ekle (her gün sabah 10:00'da çalışır):
+
+```
+0 10 * * * cd /home/kullanici/tjk-horse-race-scorer && npm run auto >> /var/log/tjk.log 2>&1
+```
+
 ## Notlar
 
 - TJK sitesinin SSL sertifikası macOS sistem CA'sı ile doğrulanamıyor, bu nedenle `rejectUnauthorized: false` kullanılıyor
