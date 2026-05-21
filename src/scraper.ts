@@ -76,7 +76,7 @@ export async function fetchSehirler(): Promise<Sehir[]> {
     sehirler.push({ id: sehirId, isim: sehirAdi, url });
   });
 
-  const yabanci = /ABD|Avustralya|G\.Afrika|Guney Afrika|Park\s|Racecourse|Raceway/i;
+  const yabanci = /ABD|Avustralya|G\.Afrika|Guney Afrika|Fransa|İngiltere|Almanya|İtalya|Park\s|Racecourse|Raceway/i;
   return sehirler.filter((s) => !yabanci.test(s.isim));
 }
 
