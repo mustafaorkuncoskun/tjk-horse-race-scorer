@@ -38,6 +38,8 @@ export interface AtSkor {
   oddsSkoru: number;
   hcSkoru: number;
   pistSkoru: number;
+  mesafeSkoru: number;
+  konsistansSkoru: number;
   istatistikSkoru: number;
   liderformSirasi: number | null;
   finalSkor: number;

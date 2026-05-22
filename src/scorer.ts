@@ -42,18 +42,30 @@ function hcSkoru(hc: number): number {
   return Math.min(100, Math.max(10, Math.round(hc * 1.2)));
 }
 
+function konsistansSkoru(son6: string): number {
+  const dereceler = parseDereceler(son6);
+  if (dereceler.length < 2) return 50;
+  const top3Sayisi = dereceler.filter((d) => d <= 3).length;
+  const oran = top3Sayisi / dereceler.length;
+  return Math.round(20 + oran * 80);
+}
+
 export function skorHesapla(
   at: At,
   liderformSirasi: number | null,
   toplamAt: number,
-  pistSkoru: number = 50
+  pistSkoru: number = 50,
+  mesafeSkoru: number = 50
 ): AtSkor {
   const fs = formSkoru(at.son6Yaris);
   const os = oddsSkoru(at.ganyan, at.agfYuzde);
   const hs = hcSkoru(at.hc);
+  const ks = konsistansSkoru(at.son6Yaris);
 
-  // Ağırlıklar: form %35, odds %30, hc %20, pist %15
-  const istatistikSkoru = Math.round(fs * 0.35 + os * 0.30 + hs * 0.20 + pistSkoru * 0.15);
+  // Ağırlıklar: form %28, odds %22, hc %12, pist %12, konsistans %14, mesafe %12
+  const istatistikSkoru = Math.round(
+    fs * 0.28 + os * 0.22 + hs * 0.12 + pistSkoru * 0.12 + ks * 0.14 + mesafeSkoru * 0.12
+  );
 
   let liderformSkoru = 50;
   if (liderformSirasi !== null && toplamAt > 0) {
@@ -78,7 +90,7 @@ export function skorHesapla(
     else guven = 'DÜŞÜK';
   }
 
-  return { at, formSkoru: fs, oddsSkoru: os, hcSkoru: hs, pistSkoru, istatistikSkoru, liderformSirasi, finalSkor, guven };
+  return { at, formSkoru: fs, oddsSkoru: os, hcSkoru: hs, pistSkoru, mesafeSkoru, konsistansSkoru: ks, istatistikSkoru, liderformSirasi, finalSkor, guven };
 }
 
 export function sirala(skorlar: AtSkor[]): AtSkor[] {

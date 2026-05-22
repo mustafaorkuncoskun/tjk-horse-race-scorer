@@ -76,7 +76,7 @@ export async function fetchSehirler(): Promise<Sehir[]> {
     sehirler.push({ id: sehirId, isim: sehirAdi, url });
   });
 
-  const yabanci = /ABD|Avustralya|G\.Afrika|Guney Afrika|Fransa|İngiltere|Almanya|İtalya|Park\s|Racecourse|Raceway/i;
+  const yabanci = /ABD|Avustralya|G\.Afrika|Guney Afrika|Fransa|İngiltere|Almanya|İtalya|Karma|Park\s|Racecourse|Raceway/i;
   return sehirler.filter((s) => !yabanci.test(s.isim));
 }
 
@@ -127,10 +127,13 @@ export async function fetchKosular(sehir: Sehir): Promise<Kos[]> {
   return kosular;
 }
 
-// Her atın bu pist tipindeki geçmiş performansını çeker (paralel çağrılır)
-// Tablo özet satırlarından okur: Çim | toplamKosu | 1. | 2. | 3. | ...
-export async function fetchAtPistSkoru(atId: string, pistTipi: string): Promise<number> {
-  if (!atId) return 50;
+// Her atın pist tipi ve mesafe geçmişini tek çağrıda çeker
+export async function fetchAtPistVeMesafeSkoru(
+  atId: string,
+  pistTipi: string,
+  mesafe: number
+): Promise<{ pistSkoru: number; mesafeSkoru: number }> {
+  if (!atId) return { pistSkoru: 50, mesafeSkoru: 50 };
   try {
     const url =
       `${BASE}/TR/YarisSever/Query/ConnectedPage/AtKosuBilgileri` +
@@ -138,30 +141,47 @@ export async function fetchAtPistSkoru(atId: string, pistTipi: string): Promise<
     const { data } = await axios.get(url, { headers: HEADERS, timeout: 12000, httpsAgent });
     const $ = load(data);
 
-    // Özet satırlarında pist tipini bul (Çim / Kum / Sentetik satırları)
+    // Pist skoru: özet satırlarından (Çim / Kum / Sentetik)
     let pistSkoru = 50;
     $('table tbody tr').each((_, row) => {
       const tds = $(row).find('td');
       const etiket = tds.eq(0).text().trim();
       if (etiket.toLowerCase() !== pistTipi.toLowerCase()) return;
-
       const toplam = parseInt(tds.eq(1).text()) || 0;
       if (toplam === 0) return;
-
-      const birinci = parseInt(tds.eq(2).text()) || 0;
-      const ikinci  = parseInt(tds.eq(3).text()) || 0;
-      const ucuncu  = parseInt(tds.eq(4).text()) || 0;
-      const top3 = birinci + ikinci + ucuncu;
-      const oran = top3 / toplam; // 0.0 - 1.0
-
-      // %0 top3 → 20p, %100 top3 → 100p
-      pistSkoru = Math.round(20 + oran * 80);
+      const top3 = (parseInt(tds.eq(2).text()) || 0) + (parseInt(tds.eq(3).text()) || 0) + (parseInt(tds.eq(4).text()) || 0);
+      pistSkoru = Math.round(20 + (top3 / toplam) * 80);
     });
 
-    return pistSkoru;
+    // Mesafe skoru: bireysel koşu satırlarından mesafe kolonunu filtrele
+    let mesafeToplam = 0;
+    let mesafeTop3 = 0;
+    $('table tbody tr').each((_, row) => {
+      const tds = $(row).find('td');
+      const satirMesafe = parseInt(tds.eq(3).text()); // mesafe kolonu
+      if (isNaN(satirMesafe)) return;
+      // ±100m toleransla eşleştir
+      if (Math.abs(satirMesafe - mesafe) > 100) return;
+      const derece = parseInt(tds.eq(tds.length - 1).text());
+      if (isNaN(derece)) return;
+      mesafeToplam++;
+      if (derece <= 3) mesafeTop3++;
+    });
+    const mesafeSkoru = mesafeToplam > 0
+      ? Math.round(20 + (mesafeTop3 / mesafeToplam) * 80)
+      : 50;
+
+    return { pistSkoru, mesafeSkoru };
   } catch {
-    return 50;
+    return { pistSkoru: 50, mesafeSkoru: 50 };
   }
+
+}
+
+// Geriye dönük uyumluluk için eski fonksiyon adı
+export async function fetchAtPistSkoru(atId: string, pistTipi: string): Promise<number> {
+  const { pistSkoru } = await fetchAtPistVeMesafeSkoru(atId, pistTipi, 0);
+  return pistSkoru;
 }
 
 function parseAtlar($: CheerioAPI, pane: ReturnType<typeof $>): At[] {

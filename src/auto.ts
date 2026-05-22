@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { fetchSehirler, fetchKosular, fetchAtPistSkoru } from './scraper';
+import { fetchSehirler, fetchKosular, fetchAtPistVeMesafeSkoru } from './scraper';
 import { skorHesapla, sirala } from './scorer';
 import { telegramGonder, kosFormatla } from './telegram';
 
@@ -25,13 +25,21 @@ async function main() {
 
     for (const kos of kosular) {
       try {
-        const pistSkorlari = await Promise.all(
-          kos.atlar.map((at) => fetchAtPistSkoru(at.atId, kos.pist || 'Kum'))
+        const pistMesafeSkorlari = await Promise.all(
+          kos.atlar.map((at) => fetchAtPistVeMesafeSkoru(at.atId, kos.pist || 'Kum', kos.mesafe))
         );
 
         const skorlar = sirala(
-          kos.atlar.map((at, i) => skorHesapla(at, null, kos.atlar.length, pistSkorlari[i]))
+          kos.atlar.map((at, i) =>
+            skorHesapla(at, null, kos.atlar.length, pistMesafeSkorlari[i].pistSkoru, pistMesafeSkorlari[i].mesafeSkoru)
+          )
         );
+
+        const maxSkor = Math.max(...skorlar.map((s) => s.finalSkor));
+        if (maxSkor < 50) {
+          console.log(`${sehir.isim} K${kos.no} atlandı (veri yetersiz, max ${maxSkor}p)`);
+          continue;
+        }
 
         const mesaj = kosFormatla(
           sehir.isim,
