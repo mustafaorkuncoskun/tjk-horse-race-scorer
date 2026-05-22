@@ -6,25 +6,27 @@ TJK'dan canlı veri çekerek her at için istatistiksel skor hesaplayan ve yarı
 
 - TJK sitesinden günlük yarış programını otomatik çeker
 - Her at için çok katmanlı skor hesaplar:
-  - **Form (%35)** — Son 6 yarış derecesi (ağırlıklı, en yeni 2x)
-  - **Piyasa (%30)** — Ganyan oranı + AGF yüzdesi
-  - **Handicap (%20)** — TJK'nın HC puanı
-  - **Pist geçmişi (%15)** — Atın bu pist tipinde (Çim/Kum/Sentetik) top-3 bitirme oranı
+  - **Form (%28)** — Son 6 yarış derecesi (ağırlıklı, en yeni 2x)
+  - **Piyasa (%22)** — Ganyan oranı + AGF yüzdesi
+  - **Konsistans (%14)** — Son 6 yarışta top-3 bitirme tutarlılığı
+  - **Handicap (%12)** — TJK'nın HC puanı
+  - **Pist geçmişi (%12)** — Atın bu pist tipinde (Çim/Kum/Sentetik) top-3 bitirme oranı
+  - **Mesafe geçmişi (%12)** — Atın bu mesafede top-3 bitirme oranı
 - Pist durumu ve hava bilgisini gösterir (Yumuşak/Normal/Sert)
 - Güven seviyesi: YÜKSEK / ORTA / DÜŞÜK / ÇAKIŞMA
 - Geçmiş yarışlar üzerinde backtest desteği
 
 ## Backtest Sonuçları
 
-181 koşu üzerinde test edildi (son 14 gün):
+185 koşu üzerinde test edildi (son 14 gün):
 
 | | Oran |
 |---|---|
-| Birinci doğru | %31 |
-| İlk ikide | %54 |
-| İlk üçte | %63 |
+| Birinci doğru | %29 |
+| İlk ikide | %50 |
+| İlk üçte | %62 |
 
-Karşılaştırma: rastgele tahmin ~%10-15 doğruluk verir.
+Karşılaştırma: rastgele tahmin ~%13 doğruluk verir.
 
 ## Kurulum
 
@@ -102,14 +104,14 @@ npm run auto
 crontab -e
 ```
 
-Şu satırı ekle (her gün sabah 10:00'da çalışır):
+Şu satırı ekle (her gün öğlen 12:00'de çalışır, ganyan oranları daha olgunlaşmış olur):
 
 ```
-0 10 * * * cd /home/kullanici/tjk-horse-race-scorer && npm run auto >> /var/log/tjk.log 2>&1
+0 12 * * * cd /home/kullanici/tjk-horse-race-scorer && /usr/bin/npm run auto >> /home/kullanici/tjk.log 2>&1
 ```
 
 ## Notlar
 
 - TJK sitesinin SSL sertifikası macOS sistem CA'sı ile doğrulanamıyor, bu nedenle `rejectUnauthorized: false` kullanılıyor
-- Araç yarıştan önce çalıştırılmalı; oranlar kapanışa kadar değişir
-- Pist geçmişi her at için ayrı HTTP isteği gerektirir (~10-15 sn)
+- Oranlar yarıştan önce değişir; 12:00'de çalıştırmak daha güvenilir tahmin sağlar
+- Pist ve mesafe geçmişi her at için ayrı HTTP isteği gerektirir (~15-20 sn)
